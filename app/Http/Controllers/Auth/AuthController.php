@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\User;
+use http\Client\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+
 
 class AuthController extends Controller
 {
@@ -46,22 +48,65 @@ class AuthController extends Controller
             'password' => 'required'
         ]);
 
-        $user = User::where('npk', $req->npk)->first();
-//        var_dump($user);
-
-        if (!$user || !Hash::check($req->password, $user->password)) {
+//        $user = User::where('npk', $req->npk)->first();
+////        var_dump($user);
+//
+//        if (!$user || !Hash::check($req->password, $user->password)) {
+//            return response()->json([
+//                'message' => "failed"
+//            ]);
+//        }
+//        var_dump($req);
+        if (Auth::attempt(['npk' => $req->npk, 'password' =>$req->password])){
+            var_dump('password');
+            $user = Auth::user();
+            $token =  $user->createToken('user')-> accessToken;
+            $data ['user'] = $user;
+            $data['token'] = $token;
             return response()->json([
-                'message' => "failed"
-            ]);
+                'sucsess' => true,
+                'data' => $data,
+                'message' => 'Good luck'
+            ],200
+            );
+        }else{
+            $cek = Hash::check($req->password, $req->password);
+            var_dump($cek);
+            return response()->json([
+                'sucsess' => false,
+                'data' => '',
+                'message' => 'Oh NO'
+            ],200
+            );
+        }
+    }
+
+    public function loginnn(Request $req)
+    {
+        $npk = $req->npk;
+        $password = $req->password;
+        $data = User::where('npk',$npk)->first();
+        if($data){
+            if(password_verify($password, $data->password)){
+                $user = User::where('npk', $req->npk)->first();
+//                $token =  $user->createToken('token')-> plainTextToken;
+                $token =  $user->createToken('user')-> accessToken;
+                var_dump($token);
+                return response()->json([
+                    'sucsess' => true,
+                    'data' => $data,
+                    'message' => 'Good luck',
+                    'token' => $token
+                ],200
+                );
+            }else{
+                return response()->json(['error' => bcrypt($password)], 401);
+            }
+        }
+        else{
+            return response()->json(['error' => 'Email Salah'], 401);
         }
 
-        $token =  $user->createToken($req->device_name)->plainTextToken;
-        $this->response['message'] = 'success';
-        $this->response['data'] = [
-            'token' => $token
-        ];
-
-        return response()->json($this->response, 200);
     }
 
     public function check()
