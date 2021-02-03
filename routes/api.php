@@ -17,8 +17,8 @@ use Illuminate\Support\Facades\Route;
 Route::post('auth/register', 'Auth\AuthController@register');
 Route::post('auth/login', 'Auth\AuthController@login');
 Route::post('auth/loginnn', 'Auth\AuthController@loginnn');
-
-Route::group(['middleware' => ['auth:api']], function () {
-    Route::get('auth/check', 'Auth\AuthController@check');
-//    Route::post('auth/logout', 'Auth\AuthController@logout');
-});
+Route::get('auth/check', 'Auth\AuthController@check');
+//Route::group(['middleware' => ['auth:sanctum']], function () {
+//    Route::get('auth/check', 'Auth\AuthController@check');
+////    Route::post('auth/logout', 'Auth\AuthController@logout');
+//});

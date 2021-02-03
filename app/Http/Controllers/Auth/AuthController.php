@@ -48,37 +48,21 @@ class AuthController extends Controller
             'password' => 'required'
         ]);
 
-//        $user = User::where('npk', $req->npk)->first();
-////        var_dump($user);
-//
-//        if (!$user || !Hash::check($req->password, $user->password)) {
-//            return response()->json([
-//                'message' => "failed"
-//            ]);
-//        }
-//        var_dump($req);
-        if (Auth::attempt(['npk' => $req->npk, 'password' =>$req->password])){
-            var_dump('password');
-            $user = Auth::user();
-            $token =  $user->createToken('user')-> accessToken;
-            $data ['user'] = $user;
-            $data['token'] = $token;
+        $user = User::where('npk', $req->npk)->first();
+
+        if (!$user || ! Hash::check($req->password, $user->password)) {
             return response()->json([
-                'sucsess' => true,
-                'data' => $data,
-                'message' => 'Good luck'
-            ],200
-            );
-        }else{
-            $cek = Hash::check($req->password, $req->password);
-            var_dump($cek);
-            return response()->json([
-                'sucsess' => false,
-                'data' => '',
-                'message' => 'Oh NO'
-            ],200
-            );
+                'message' => "failed"
+            ]);
         }
+
+        $token =  $user->createToken($req->npk)->plainTextToken;
+        $this->response['message'] = 'success';
+        $this->response['data'] = [
+            'token' => $token
+        ];
+
+        return response()->json($this->response, 200);
     }
 
     public function loginnn(Request $req)
@@ -90,8 +74,7 @@ class AuthController extends Controller
             if(password_verify($password, $data->password)){
                 $user = User::where('npk', $req->npk)->first();
 //                $token =  $user->createToken('token')-> plainTextToken;
-                $token =  $user->createToken('user')-> accessToken;
-                var_dump($token);
+                $token =  $user->createToken('user')-> plainTextToken;
                 return response()->json([
                     'sucsess' => true,
                     'data' => $data,
@@ -112,7 +95,6 @@ class AuthController extends Controller
     public function check()
     {
         $user = Auth::user();
-
         $this->response['message'] = 'success';
         $this->response['data'] = $user;
 
