@@ -42,19 +42,20 @@ class AuthController extends Controller
     public function login(Request $req)
     {
         $req->validate([
-            'username' => 'required',
+            'npk' => 'required',
             'password' => 'required'
         ]);
 
-        $user = User::where('email', $req->username)->first();
+        $user = User::where('npk', $req->npk)->first();
+//        var_dump($user);
 
-        if (!$user || ! Hash::check($req->password, $user->password)) {
+        if (!$user || !Hash::check($req->password, $user->password)) {
             return response()->json([
                 'message' => "failed"
             ]);
         }
 
-        $token =  $user->createToken()->plainTextToken;
+        $token =  $user->createToken($req->device_name)->plainTextToken;
         $this->response['message'] = 'success';
         $this->response['data'] = [
             'token' => $token
